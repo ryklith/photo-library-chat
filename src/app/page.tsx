@@ -79,9 +79,15 @@ export default function Home() {
                 <ChevronDown className={`h-6 w-6 transition-transform duration-500 ease-in-out ${isChatExpanded ? 'rotate-0' : 'rotate-180'}`} />
               </Button>
             </div>
-            <div className={`flex flex-col flex-1 transition-opacity duration-500 ease-in-out ${!isChatExpanded ? 'opacity-0 lg:opacity-100' : 'opacity-100'}`}>
-              {/* Chat History */}
-              <div className="flex-1 overflow-y-auto mb-4 space-y-6">
+            <div className={`flex flex-col flex-1 transition-opacity duration-500 ease-in-out ${!isChatExpanded ? 'opacity-0 lg:opacity-100' : 'opacity-100'}`} style={{ height: 'calc(100% - 60px)' }}>
+              {/* Chat History - Scrollable with explicit height calculation */}
+              <div 
+                className="flex-1 overflow-y-auto space-y-6 pr-2"
+                style={{ 
+                  height: 'calc(100% - 80px)', // Reserve space for text input (60px) + margin (20px)
+                  minHeight: '200px'
+                }}
+              >
                 {/* Sample conversation messages */}
                 <div className="flex justify-start">
                   <div className="max-w-[80%] bg-muted rounded-lg p-3">
@@ -100,18 +106,33 @@ export default function Home() {
                     <p className="text-sm">I found 47 photos from your summer vacation! They're from July 15-22, 2023. Would you like me to organize them by location or date?</p>
                   </div>
                 </div>
+
+                {/* Add more messages to demonstrate scrolling */}
+                {Array.from({ length: 10 }, (_, index) => (
+                  <div key={index} className="flex justify-start">
+                    <div className="max-w-[80%] bg-muted rounded-lg p-3">
+                      <p className="text-sm">This is message {index + 4} to demonstrate the scrollable chat history. The text input should remain fixed at the bottom.</p>
+                    </div>
+                  </div>
+                ))}
               </div>
               
-              {/* Text Input */}
-              <div className="flex-shrink-0">
-                <div className="relative">
+              {/* Text Input - Fixed at bottom with explicit height */}
+              <div 
+                className="flex-shrink-0 mt-4"
+                style={{ height: '60px' }}
+              >
+                <div className="relative h-full">
                   <textarea 
-                    className="w-full p-3 pr-12 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full h-full p-3 pr-12 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Talk to your photo library here..."
-                    rows={1}
-                    style={{ minHeight: '44px', maxHeight: '120px' }}
+                    style={{ 
+                      minHeight: '44px',
+                      maxHeight: '60px',
+                      overflowY: 'auto'
+                    }}
                   />
-                  <button className="absolute right-3 top-2 p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
                     <svg className="w-5 h-5 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
