@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 export default function Home() {
-  const [isChatExpanded, setIsChatExpanded] = useState(false)
+  const [isChatExpanded, setIsChatExpanded] = useState(false) // Default to folded on mobile
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,9 +49,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-120px)]">
           {/* Gallery Section - Top on mobile, Right on desktop */}
-          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-1 lg:order-2 mt-2 flex flex-col transition-all duration-500 ease-in-out ${!isChatExpanded ? 'h-[calc(100vh-200px)]' : 'h-[calc(50vh-100px)]'}`}>
+          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-1 lg:order-2 mt-2 flex flex-col transition-all duration-500 ease-in-out ${!isChatExpanded ? 'h-[calc(100vh-140px)] lg:h-[calc(100vh-120px)]' : 'h-[calc(50vh-60px)] lg:h-[calc(100vh-120px)]'}`}>
             <div className="flex items-center mb-4 flex-shrink-0">
               <h2 className="text-2xl font-bold">Gallery</h2>
             </div>
@@ -66,7 +66,7 @@ export default function Home() {
           </div>
 
           {/* Chat Section - Bottom on mobile, Left on desktop */}
-          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-2 lg:order-1 transition-all duration-500 ease-in-out flex flex-col ${!isChatExpanded ? 'h-16 overflow-hidden' : 'h-[calc(50vh-100px)]'}`}>
+          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-2 lg:order-1 transition-all duration-500 ease-in-out flex flex-col mt-2 ${!isChatExpanded ? 'h-16 overflow-hidden lg:h-[calc(100vh-120px)]' : 'h-[calc(50vh-60px)] lg:h-[calc(100vh-120px)]'}`}>
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <h2 className="text-2xl font-bold">Chat</h2>
               {/* Mobile Toggle Button - Right side */}
@@ -79,8 +79,45 @@ export default function Home() {
                 <ChevronDown className={`h-6 w-6 transition-transform duration-500 ease-in-out ${isChatExpanded ? 'rotate-0' : 'rotate-180'}`} />
               </Button>
             </div>
-            <div className={`flex items-center justify-center overflow-hidden flex-1 transition-opacity duration-500 ease-in-out ${!isChatExpanded ? 'opacity-0' : 'opacity-100'}`}>
-              <p className="text-muted-foreground">Chat placeholder content will go here</p>
+            <div className={`flex flex-col flex-1 transition-opacity duration-500 ease-in-out ${!isChatExpanded ? 'opacity-0 lg:opacity-100' : 'opacity-100'}`}>
+              {/* Chat History */}
+              <div className="flex-1 overflow-y-auto mb-4 space-y-6">
+                {/* Sample conversation messages */}
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] bg-muted rounded-lg p-3">
+                    <p className="text-sm">Hello! I can help you explore your photo library. What would you like to know about your photos?</p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <div className="max-w-[80%] bg-primary text-primary-foreground rounded-lg p-3">
+                    <p className="text-sm">Can you show me all the photos from my vacation last summer?</p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] bg-muted rounded-lg p-3">
+                    <p className="text-sm">I found 47 photos from your summer vacation! They're from July 15-22, 2023. Would you like me to organize them by location or date?</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Text Input */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <textarea 
+                    className="w-full p-3 pr-12 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Talk to your photo library here..."
+                    rows={1}
+                    style={{ minHeight: '44px', maxHeight: '120px' }}
+                  />
+                  <button className="absolute right-3 top-2 p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                    <svg className="w-5 h-5 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
