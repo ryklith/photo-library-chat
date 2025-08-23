@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 export default function Home() {
-  const [isChatExpanded, setIsChatExpanded] = useState(true)
+  const [isChatExpanded, setIsChatExpanded] = useState(false)
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,8 +51,8 @@ export default function Home() {
       <main className="container mx-auto px-4 py-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-200px)]">
           {/* Gallery Section - Top on mobile, Right on desktop */}
-          <div className={`bg-card border rounded-lg p-6 order-1 lg:order-2 mt-2 flex flex-col ${!isChatExpanded ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-200px)]'}`}>
-            <div className="flex justify-center mb-4 flex-shrink-0">
+          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-1 lg:order-2 mt-2 flex flex-col transition-all duration-500 ease-in-out ${!isChatExpanded ? 'h-[calc(100vh-200px)]' : 'h-[calc(50vh-100px)]'}`}>
+            <div className="flex items-center mb-4 flex-shrink-0">
               <h2 className="text-2xl font-bold">Gallery</h2>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1">
@@ -66,20 +66,20 @@ export default function Home() {
           </div>
 
           {/* Chat Section - Bottom on mobile, Left on desktop */}
-          <div className={`bg-card border rounded-lg p-6 order-2 lg:order-1 transition-all duration-300 ${!isChatExpanded ? 'h-16 overflow-hidden' : ''}`}>
-            <div className="flex flex-col items-center mb-4">
-              {/* Mobile Toggle Button - Above title */}
+          <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-2 lg:order-1 transition-all duration-500 ease-in-out flex flex-col ${!isChatExpanded ? 'h-16 overflow-hidden' : 'h-[calc(50vh-100px)]'}`}>
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <h2 className="text-2xl font-bold">Chat</h2>
+              {/* Mobile Toggle Button - Right side */}
               <Button 
                 variant="ghost" 
-                size="lg" 
-                className="lg:hidden mb-1"
+                size="sm" 
+                className="lg:hidden p-1"
                 onClick={() => setIsChatExpanded(!isChatExpanded)}
               >
-                {isChatExpanded ? <ChevronDown className="h-6 w-6" /> : <ChevronUp className="h-6 w-6" />}
+                <ChevronDown className={`h-6 w-6 transition-transform duration-500 ease-in-out ${isChatExpanded ? 'rotate-0' : 'rotate-180'}`} />
               </Button>
-              <h2 className="text-2xl font-bold">Chat</h2>
             </div>
-            <div className="h-full flex items-center justify-center">
+            <div className={`flex items-center justify-center overflow-hidden flex-1 transition-opacity duration-500 ease-in-out ${!isChatExpanded ? 'opacity-0' : 'opacity-100'}`}>
               <p className="text-muted-foreground">Chat placeholder content will go here</p>
             </div>
           </div>
