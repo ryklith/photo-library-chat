@@ -1,0 +1,217 @@
+@import './variables.scss';
+
+// Example SCSS Component Styles
+// This demonstrates how to use SCSS features alongside Tailwind CSS
+
+.scss-button {
+  @include button-base;
+  
+  // Button variants using SCSS
+  &--primary {
+    background-color: hsl($primary);
+    color: hsl($primary-foreground);
+    
+    &:hover {
+      background-color: hsl($primary / 0.9);
+    }
+  }
+  
+  &--secondary {
+    background-color: hsl($secondary);
+    color: hsl($secondary-foreground);
+    
+    &:hover {
+      background-color: hsl($secondary / 0.8);
+    }
+  }
+  
+  &--outline {
+    background-color: transparent;
+    border: 1px solid hsl($border);
+    color: hsl($foreground);
+    
+    &:hover {
+      background-color: hsl($accent);
+      color: hsl($accent-foreground);
+    }
+  }
+  
+  &--destructive {
+    background-color: hsl($destructive);
+    color: hsl($destructive-foreground);
+    
+    &:hover {
+      background-color: hsl($destructive / 0.9);
+    }
+  }
+  
+  // Button sizes
+  &--sm {
+    height: 2.25rem;
+    padding: 0 $spacing-sm $spacing-sm;
+    font-size: 0.875rem;
+  }
+  
+  &--md {
+    height: 2.5rem;
+    padding: $spacing-sm $spacing-md;
+  }
+  
+  &--lg {
+    height: 2.75rem;
+    padding: $spacing-sm $spacing-lg;
+    font-size: 1rem;
+  }
+}
+
+.scss-card {
+  background-color: hsl($card);
+  color: hsl($card-foreground);
+  border: 1px solid hsl($border);
+  border-radius: $radius-lg;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  
+  &__header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid hsl($border);
+  }
+  
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__description {
+    color: hsl($muted-foreground);
+    font-size: 0.875rem;
+  }
+  
+  &__content {
+    padding: $spacing-lg;
+  }
+  
+  &__footer {
+    padding: $spacing-lg;
+    border-top: 1px solid hsl($border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.scss-alert {
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  border: 1px solid transparent;
+  margin-bottom: $spacing-md;
+  
+  &--info {
+    background-color: hsl(210 40% 96%);
+    border-color: hsl(210 40% 90%);
+    color: hsl(210 40% 20%);
+  }
+  
+  &--success {
+    background-color: hsl(142 76% 96%);
+    border-color: hsl(142 76% 90%);
+    color: hsl(142 76% 20%);
+  }
+  
+  &--warning {
+    background-color: hsl(48 96% 96%);
+    border-color: hsl(48 96% 90%);
+    color: hsl(48 96% 20%);
+  }
+  
+  &--error {
+    background-color: hsl(0 84% 96%);
+    border-color: hsl(0 84% 90%);
+    color: hsl(0 84% 20%);
+  }
+}
+
+.scss-grid {
+  display: grid;
+  gap: $spacing-md;
+  
+  @include responsive(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include responsive(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @include responsive(xl) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.scss-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+  
+  @include responsive(md) {
+    padding: 0 $spacing-lg;
+  }
+  
+  @include responsive(lg) {
+    padding: 0 $spacing-xl;
+  }
+}
+
+// Dark mode support
+@include dark-mode {
+  .scss-card {
+    background-color: hsl(222.2 84% 4.9%);
+    color: hsl(210 40% 98%);
+    border-color: hsl(217.2 32.6% 17.5%);
+  }
+  
+  .scss-button {
+    &--outline {
+      border-color: hsl(217.2 32.6% 17.5%);
+      color: hsl(210 40% 98%);
+      
+      &:hover {
+        background-color: hsl(217.2 32.6% 17.5%);
+        color: hsl(210 40% 98%);
+      }
+    }
+  }
+}
+
+// Utility classes using SCSS
+.scss-text {
+  &--muted {
+    color: hsl($muted-foreground);
+  }
+  
+  &--primary {
+    color: hsl($primary);
+  }
+  
+  &--center {
+    text-align: center;
+  }
+  
+  &--left {
+    text-align: left;
+  }
+  
+  &--right {
+    text-align: right;
+  }
+}
+
+.scss-spacing {
+  &--xs { margin: $spacing-xs; }
+  &--sm { margin: $spacing-sm; }
+  &--md { margin: $spacing-md; }
+  &--lg { margin: $spacing-lg; }
+  &--xl { margin: $spacing-xl; }
+  &--2xl { margin: $spacing-2xl; }
+}

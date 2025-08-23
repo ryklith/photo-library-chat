@@ -1,0 +1,107 @@
+// SCSS Variables for Design System
+// These can be used alongside or instead of CSS custom properties
+
+// Color Palette
+$primary: #222.2 47.4% 11.2%;
+$primary-foreground: #210 40% 98%;
+$secondary: #210 40% 96%;
+$secondary-foreground: #222.2 84% 4.9%;
+$muted: #210 40% 96%;
+$muted-foreground: #215.4 16.3% 46.9%;
+$accent: #210 40% 96%;
+$accent-foreground: #222.2 84% 4.9%;
+$destructive: #0 84.2% 60.2%;
+$destructive-foreground: #210 40% 98%;
+$border: #214.3 31.8% 91.4%;
+$input: #214.3 31.8% 91.4%;
+$ring: #222.2 84% 4.9%;
+
+// Background Colors
+$background: #0 0% 100%;
+$foreground: #222.2 84% 4.9%;
+$card: #0 0% 100%;
+$card-foreground: #222.2 84% 4.9%;
+$popover: #0 0% 100%;
+$popover-foreground: #222.2 84% 4.9%;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-2xl: 3rem;
+
+// Border Radius
+$radius-sm: 0.25rem;
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
+$radius-xl: 1rem;
+
+// Typography
+$font-family-sans: var(--font-geist-sans), system-ui, sans-serif;
+$font-family-mono: var(--font-geist-mono), monospace;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-index
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+
+// Mixins
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $breakpoint-sm) { @content; }
+  } @else if $breakpoint == md {
+    @media (min-width: $breakpoint-md) { @content; }
+  } @else if $breakpoint == lg {
+    @media (min-width: $breakpoint-lg) { @content; }
+  } @else if $breakpoint == xl {
+    @media (min-width: $breakpoint-xl) { @content; }
+  } @else if $breakpoint == 2xl {
+    @media (min-width: $breakpoint-2xl) { @content; }
+  }
+}
+
+@mixin focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl($ring);
+}
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

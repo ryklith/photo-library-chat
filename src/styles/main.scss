@@ -1,0 +1,212 @@
+// Main SCSS file
+// Import all SCSS styles here
+
+@import './variables.scss';
+@import './components.scss';
+
+// Global SCSS styles
+.scss-global {
+  // Reset and base styles
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: $font-family-sans;
+    line-height: 1.6;
+    color: hsl($foreground);
+    background-color: hsl($background);
+  }
+  
+  // Typography
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: $spacing-md;
+  }
+  
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.75rem; }
+  h4 { font-size: 1.5rem; }
+  h5 { font-size: 1.25rem; }
+  h6 { font-size: 1rem; }
+  
+  p {
+    margin-bottom: $spacing-md;
+  }
+  
+  // Links
+  a {
+    color: hsl($primary);
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  // Lists
+  ul, ol {
+    margin-bottom: $spacing-md;
+    padding-left: $spacing-lg;
+  }
+  
+  li {
+    margin-bottom: $spacing-xs;
+  }
+  
+  // Code
+  code {
+    background-color: hsl($muted);
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-sm;
+    font-family: $font-family-mono;
+    font-size: 0.875em;
+  }
+  
+  pre {
+    background-color: hsl($muted);
+    padding: $spacing-md;
+    border-radius: $radius-md;
+    overflow-x: auto;
+    margin-bottom: $spacing-md;
+    
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+  
+  // Blockquotes
+  blockquote {
+    border-left: 4px solid hsl($border);
+    padding-left: $spacing-md;
+    margin-bottom: $spacing-md;
+    font-style: italic;
+    color: hsl($muted-foreground);
+  }
+  
+  // Tables
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: $spacing-md;
+  }
+  
+  th, td {
+    padding: $spacing-sm;
+    text-align: left;
+    border-bottom: 1px solid hsl($border);
+  }
+  
+  th {
+    font-weight: 600;
+    background-color: hsl($muted);
+  }
+  
+  // Images
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: $radius-md;
+  }
+  
+  // Form elements
+  input, textarea, select {
+    width: 100%;
+    padding: $spacing-sm;
+    border: 1px solid hsl($border);
+    border-radius: $radius-md;
+    font-family: inherit;
+    font-size: inherit;
+    
+    &:focus {
+      @include focus-ring;
+      border-color: hsl($ring);
+    }
+  }
+  
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: 500;
+  }
+  
+  // Buttons
+  button {
+    @include button-base;
+  }
+  
+  // Dark mode overrides
+  @include dark-mode {
+    body {
+      color: hsl(210 40% 98%);
+      background-color: hsl(222.2 84% 4.9%);
+    }
+    
+    code, pre {
+      background-color: hsl(217.2 32.6% 17.5%);
+    }
+    
+    th {
+      background-color: hsl(217.2 32.6% 17.5%);
+    }
+    
+    input, textarea, select {
+      background-color: hsl(217.2 32.6% 17.5%);
+      border-color: hsl(217.2 32.6% 17.5%);
+      color: hsl(210 40% 98%);
+    }
+  }
+}
+
+// Animation utilities
+.scss-fade {
+  &-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  &-out {
+    animation: fadeOut 0.3s ease-in-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+// Loading spinner
+.scss-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid hsl($border);
+  border-radius: 50%;
+  border-top-color: hsl($primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
