@@ -5,6 +5,7 @@
  */
 
 import { env } from './env';
+import { galleryService, GalleryData } from './gallery-service';
 
 export interface ChatMessage {
   id: string;
@@ -18,6 +19,7 @@ export interface ChatResponse {
   message?: string;
   error?: string;
   data?: any;
+  gallery?: GalleryData;
 }
 
 export class ChatService {
@@ -123,15 +125,40 @@ export class ChatService {
       const data = await response.json();
       console.log('✅ Message sent successfully:', data);
       
-      return {
+      // Extract gallery data if available
+      console.log('🖼️ Attempting to extract gallery data...');
+      const galleryData = galleryService.extractGalleryData(data);
+      console.log('🖼️ Gallery extraction result:', galleryData);
+      
+      // Handle nested output structure
+      let responseText = 'Message processed successfully';
+      if (data.output) {
+        if (typeof data.output === 'string') {
+          responseText = data.output;
+        } else if (data.output.output) {
+          responseText = data.output.output;
+        }
+      } else if (data.message) {
+        responseText = data.message;
+      }
+
+      const result = {
         success: true,
         message: 'Message sent successfully',
         data: {
-          response: data.output || data.message || 'Message processed successfully',
+          response: responseText,
           intermediateSteps: data.intermediateSteps || [],
           raw: data
         }
       };
+
+      // Add gallery data if available
+      if (galleryData) {
+        result.gallery = galleryData;
+      }
+
+      console.log('📤 Final response structure:', result);
+      return result;
     } catch (error) {
       console.error('❌ Failed to send message:', error);
       return {

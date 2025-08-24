@@ -24,11 +24,18 @@ export async function POST(request: NextRequest) {
     const result = await chatService.sendMessage(message, formattedHistory);
     
     if (result.success) {
-      return NextResponse.json({
+      const response: any = {
         success: true,
         message: result.message,
         data: result.data
-      });
+      };
+      
+      // Include gallery data if available
+      if (result.gallery) {
+        response.gallery = result.gallery;
+      }
+      
+      return NextResponse.json(response);
     } else {
       return NextResponse.json({
         success: false,
@@ -78,11 +85,18 @@ export async function GET(request: NextRequest) {
     const result = await chatService.sendMessage(message, formattedHistory);
     
     if (result.success) {
-      return NextResponse.json({
+      const response: any = {
         success: true,
         message: result.message,
         data: result.data
-      });
+      };
+      
+      // Include gallery data if available
+      if (result.gallery) {
+        response.gallery = result.gallery;
+      }
+      
+      return NextResponse.json(response);
     } else {
       return NextResponse.json({
         success: false,

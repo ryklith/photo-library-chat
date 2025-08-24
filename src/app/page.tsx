@@ -1,8 +1,9 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Github, Zap, ChevronUp, ChevronDown, Send, TestTube } from "lucide-react"
+import { Github, Zap, ChevronUp, ChevronDown, Send, TestTube, Image, Users, Star } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
+import { GalleryImage, GalleryData } from "@/lib/gallery-service"
 
 interface ChatMessage {
   id: string;
@@ -25,6 +26,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [webhookStatus, setWebhookStatus] = useState<{ configured: boolean; url: string } | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null)
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
+  const [currentQuery, setCurrentQuery] = useState<string>('')
   
   const chatHistoryRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -118,6 +121,7 @@ export default function Home() {
       })
 
       const data = await response.json()
+      console.log('📥 Received response from API:', data);
 
       if (data.success) {
         // Add bot response
@@ -128,6 +132,13 @@ export default function Home() {
           isUser: false,
         }
         setMessages(prev => [...prev, botMessage])
+        
+        // Update gallery if gallery data is available
+        if (data.gallery && data.gallery.images && data.gallery.images.length > 0) {
+          setGalleryImages(data.gallery.images)
+          setCurrentQuery(data.gallery.query || userMessage.content)
+          console.log('🖼️ Gallery updated with', data.gallery.images.length, 'images')
+        }
       } else {
         // Add error message
         const errorMessage: ChatMessage = {
@@ -203,16 +214,71 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-120px)]">
           {/* Gallery Section - Top on mobile, Right on desktop */}
           <div className={`bg-card border rounded-lg pt-2 px-6 pb-6 order-1 lg:order-2 mt-2 flex flex-col transition-all duration-500 ease-in-out ${!isChatExpanded ? 'h-[calc(100vh-140px)] lg:h-[calc(100vh-120px)]' : 'h-[calc(50vh-60px)] lg:h-[calc(100vh-120px)]'}`}>
-            <div className="flex items-center mb-4 flex-shrink-0">
-              <h2 className="text-2xl font-bold">Gallery</h2>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1">
-              {/* Placeholder thumbnails */}
-              {Array.from({ length: 12 }, (_, index) => (
-                <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/20">
-                  <span className="text-sm text-muted-foreground">Thumbnail {index + 1}</span>
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <div>
+                <h2 className="text-2xl font-bold">Gallery</h2>
+                {currentQuery && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Results for: "{currentQuery}"
+                  </p>
+                )}
+              </div>
+              {galleryImages.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  {galleryImages.length} image{galleryImages.length !== 1 ? 's' : ''}
                 </div>
-              ))}
+              )}
+            </div>
+            
+            <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1">
+              {galleryImages.length > 0 ? (
+                galleryImages.map((image, index) => (
+                  <div key={image.id} className="group relative aspect-square bg-muted rounded-lg overflow-hidden border hover:border-primary transition-colors">
+                    <img 
+                      src={image.url} 
+                      alt={image.description}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <div className="hidden absolute inset-0 bg-muted flex items-center justify-center">
+                      <div className="text-center p-2">
+                        <Image className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">Image unavailable</p>
+                      </div>
+                    </div>
+                    
+                    {/* Image overlay with metadata */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors">
+                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3" />
+                            <span>{(image.score * 100).toFixed(1)}%</span>
+                          </div>
+                          {image.metadata.num_people && (
+                            <div className="flex items-center space-x-1">
+                              <Users className="w-3 h-3" />
+                              <span>{image.metadata.num_people}</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs mt-1 line-clamp-2">{image.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                // Placeholder thumbnails when no images
+                Array.from({ length: 12 }, (_, index) => (
+                  <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/20">
+                    <span className="text-sm text-muted-foreground">Thumbnail {index + 1}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -273,16 +339,16 @@ export default function Home() {
               >
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] rounded-lg p-3 ${
-                      message.isUser 
-                        ? 'bg-primary text-primary-foreground' 
-                        : message.content.includes('❌') 
-                          ? 'bg-red-100 text-red-800'
-                          : message.content.includes('✅')
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-muted'
-                    }`}>
-                      <p className="text-sm">{message.content}</p>
+                                          <div className={`max-w-[80%] rounded-lg p-3 ${
+                        message.isUser 
+                          ? 'bg-primary text-primary-foreground' 
+                          : (typeof message.content === 'string' && message.content.includes('❌'))
+                            ? 'bg-red-100 text-red-800'
+                            : (typeof message.content === 'string' && message.content.includes('✅'))
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-muted'
+                      }`}>
+                        <p className="text-sm">{typeof message.content === 'string' ? message.content : JSON.stringify(message.content)}</p>
                       <p className="text-xs opacity-70 mt-1">
                         {message.timestamp.toLocaleTimeString('en-US', {
                           hour12: false,
