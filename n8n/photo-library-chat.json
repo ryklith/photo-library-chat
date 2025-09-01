@@ -1,0 +1,1296 @@
+{
+  "name": "Photo Library Chat",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "Analyze this photo. Return ONLY a valid JSON object with these exact fields (no markdown, no code blocks, no additional text):\n\n{\n  \"description\": \"a scene description in 1-3 sentences as a string\",\n  \"num_people\": 0,\n  \"num_women\": 0,\n  \"num_men\": 0,\n  \"num_nonbinary\": 0,\n  \"age_groups\": [\"adult\", \"child\", \"elderly\"],\n  \"looking_at_camera\": false,\n  \"blurry\": false,\n  \"is_photo\": true,\n  \"photo_setting\": \"indoors\",\n  \"activities\": [\"activity1\", \"activity2\"],\n  \"event_type\": [\"event1\"],\n  \"photo_quality\": 8,\n  \"objects\": [\"object1\", \"object2\"],\n  \"text\": [\"text1\"],\n  \"mood\": 8\n}\n\nReplace the example values with your analysis. Return only the JSON object, nothing else.",
+        "imageUrls": "={{'https://photo-library-chat.s3.eu-north-1.amazonaws.com/' + $json.Key }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -144,
+        80
+      ],
+      "id": "89e08d94-b50b-4ca3-9ded-5d6b8e39d87d",
+      "name": "Analyze image",
+      "retryOnFail": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID_HERE",
+          "name": "OpenAi account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the OpenAI response\n  let response = $input.first().json.content;\n\n// Remove markdown code blocks if present\nresponse = response.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n\n// Parse the JSON\ntry {\n  const parsedData = JSON.parse(response);\n  parsedData.filename = $('Loop').first().json.Key;\n  parsedData.cloud_url = 'YOUR_S3_BUCKET_URL_HERE/' + $('Loop').first().json.Key;\n  return parsedData;\n} catch (error) {\n  // If parsing fails, try to extract JSON from the text\n  const jsonMatch = response.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    const match = JSON.parse(jsonMatch[0]);\n    return match;\n  } else {\n    throw new Error('Could not parse JSON from response: ' + response);\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        64
+      ],
+      "id": "d19923bf-9569-4891-87d3-619e02e85b75",
+      "name": "Code",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "tableId": "photos",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        432,
+        48
+      ],
+      "id": "b110d0b0-e3c7-42a3-9fb6-78ee9a95d945",
+      "name": "Create a row",
+              "credentials": {
+          "supabaseApi": {
+            "id": "YOUR_SUPABASE_CREDENTIAL_ID_HERE",
+            "name": "Supabase account 2"
+          }
+        },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "YOUR_S3_BUCKET_NAME_HERE",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        64
+      ],
+      "id": "e78b9bab-318f-4dc5-ba38-ea248f103c7e",
+      "name": "Get file names from S3",
+      "credentials": {
+        "aws": {
+          "id": "YOUR_AWS_CREDENTIAL_ID_HERE",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        64
+      ],
+      "id": "912687cb-cbb6-4232-967f-a7743f034b38",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "content": "## Analyze images and store to Supabase\n \n",
+        "height": 464,
+        "width": 1760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "de7e1ca4-ec2c-4e64-8533-dc9f6c3a96d3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        480
+      ],
+      "id": "d2210136-e16e-4437-b14e-0f21bed382c5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        736
+      ],
+      "id": "a7e2a3c7-8ed4-4035-82f5-eeadfe362e5c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID_HERE",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search in image database",
+        "operation": "getAll",
+        "tableId": "photos"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        736
+      ],
+      "id": "3f7110a3-1e99-45cc-90ae-e296efb9fb11",
+      "name": "Get many rows in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "hPQe4AXQL764XpI5",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"photos\": [\n    {\n      \"id\": \"1234\",\n      \"url\": \"https://cloud-storage-url.com/photo.jpg\",\n      \"filename\": \"photo_name.jpg\",\n      \"description\": \"A group of people are seated outdoors at tables, enjoying beverages in a garden setting.\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        736
+      ],
+      "id": "7dc5a35e-9f94-4002-9b99-f139235dd4ce",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query.query }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        1056
+      ],
+      "id": "9a44124c-6381-477a-bd40-89161eed6045",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        1312
+      ],
+      "id": "ad257c4f-1937-4db3-91b1-3dc1386f5b96",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID_HERE",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search in image database",
+        "operation": "getAll",
+        "tableId": "photos"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        1312
+      ],
+      "id": "1ac4012e-7fc5-4e1f-9030-b1e7f83c7fa4",
+      "name": "Get many rows in Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "YOUR_SUPABASE_CREDENTIAL_ID_HERE",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"photos\": [\n    {\n      \"id\": \"1234\",\n      \"url\": \"https://cloud-storage-url.com/photo.jpg\",\n      \"filename\": \"photo_name.jpg\",\n      \"description\": \"A group of people are seated outdoors at tables, enjoying beverages in a garden setting.\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        1312
+      ],
+      "id": "c88ed2a1-73fc-4cda-a09a-b1a91facf0ce",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "path": "a3aa0291-dc78-4545-acdc-4753619ae22a",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        1056
+      ],
+      "id": "142d9b80-f0ac-4367-9db5-f8593e6a7931",
+      "name": "Webhook1",
+      "webhookId": "YOUR_WEBHOOK_ID_HERE"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -80,
+        1056
+      ],
+      "id": "23b2df57-2304-4d2c-8793-50540560ea8e",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_REPLICATE_API_KEY_HERE"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"version\": \"YOUR_REPLICATE_MODEL_VERSION_HERE\",\n  \"input\": {\n    \"image\": \"YOUR_S3_BUCKET_URL_HERE/example.jpg\"\n  }\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "973a093e-7ef3-46da-a0f8-0cb85f799c72",
+      "name": "Get Embeddings (Replicate CLIP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -512,
+        1584
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e26f54e3-2407-4d1a-8603-ee8849a5ca30",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3e84ddc1-6994-48d4-8727-054408835dea",
+              "name": "path",
+              "value": "={{ $json.input.image }}",
+              "type": "string"
+            },
+            {
+              "id": "1d39ada9-3e30-4f24-afb8-a7f1a0509942",
+              "name": "filename",
+              "value": "={{ $json.input.image.extractUrlPath().slice(1) }}",
+              "type": "string"
+            },
+            {
+              "id": "feb2d5f3-9ee1-4795-bda0-974a400a0ed4",
+              "name": "embedding",
+              "value": "={{ $json.output.embedding }}",
+              "type": "array"
+            },
+            {
+              "id": "3da90433-4a4b-4e5e-8dc8-1aeae5088ef9",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        1584
+      ],
+      "id": "1b81abff-9842-4d23-831b-ef6b028d6c93",
+      "name": "Flatten JSON"
+    },
+    {
+      "parameters": {
+        "content": "## Test Supabase with Chat\n",
+        "height": 560,
+        "width": 1792,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1056,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "7a67ba95-94ec-421e-bda5-6b065d54a5c4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Query Supabase for Album\n\n",
+        "height": 512,
+        "width": 1952,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1232,
+        992
+      ],
+      "typeVersion": 1,
+      "id": "eb31d9ac-4b9a-4081-9b55-212f4f1671c4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## CLIP Replicate API call\n",
+        "height": 304,
+        "width": 1392,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        1552
+      ],
+      "typeVersion": 1,
+      "id": "e8a6e3d2-42c5-426f-a261-1b5c5c00e1ea",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "Analyze this photo. Return ONLY a valid JSON object with these exact fields (no markdown, no code blocks, no additional text):\n\n{\n  \"description\": \"a scene description in 1-3 sentences as a string\",\n  \"num_people\": 0,\n  \"num_women\": 0,\n  \"num_men\": 0,\n  \"num_nonbinary\": 0,\n  \"age_groups\": [\"adult\", \"child\", \"elderly\"],\n  \"looking_at_camera\": false,\n  \"blurry\": false,\n  \"is_photo\": true,\n  \"photo_setting\": \"indoors\",\n  \"activities\": [\"activity1\", \"activity2\"],\n  \"event_type\": [\"event1\"],\n  \"photo_quality\": 8,\n  \"objects\": [\"object1\", \"object2\"],\n  \"text\": [\"text1\"],\n  \"mood\": 8\n}\n\nReplace the example values with your analysis. Return only the JSON object, nothing else.",
+        "imageUrls": "={{'https://photo-library-chat.s3.eu-north-1.amazonaws.com/' + $json.Key }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1440,
+        1664
+      ],
+      "id": "a763b6e4-117f-47e4-9dd9-242cee61ab2f",
+      "name": "Analyze image1",
+      "retryOnFail": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "DJDj3woyDoAMgnSI",
+          "name": "OpenAi account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "YOUR_S3_BUCKET_NAME_HERE",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1648
+      ],
+      "id": "36e2c007-48da-4d23-a862-950bc187ab0b",
+      "name": "Get file names from S",
+      "credentials": {
+        "aws": {
+          "id": "YOUR_AWS_CREDENTIAL_ID_HERE",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1184,
+        1648
+      ],
+      "id": "ae8b7708-1022-46dc-bc13-47d048cbcec0",
+      "name": "Loop1"
+    },
+    {
+      "parameters": {
+        "content": "## CLIP and OpenAI Analysis\n",
+        "height": 480,
+        "width": 2016,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        1568
+      ],
+      "typeVersion": 1,
+      "id": "6d428043-e1f8-400e-b7f4-ef6a659bdadc",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_REPLICATE_API_KEY_HERE"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"version\": \"YOUR_REPLICATE_MODEL_VERSION_HERE\",\n  \"input\": {\n    \"image\": \"{{ $json.cloud_url }}\"\n  }\n} ",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "135c796a-3b6e-48ea-b4fb-1afbdd953b19",
+      "name": "Get Embeddings (Replicate CLIP)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1936,
+        1632
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e26f54e3-2407-4d1a-8603-ee8849a5ca30",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3e84ddc1-6994-48d4-8727-054408835dea",
+              "name": "path",
+              "value": "={{ $json.input.image }}",
+              "type": "string"
+            },
+            {
+              "id": "1d39ada9-3e30-4f24-afb8-a7f1a0509942",
+              "name": "filename",
+              "value": "={{ $json.input.image.extractUrlPath().slice(1) }}",
+              "type": "string"
+            },
+            {
+              "id": "feb2d5f3-9ee1-4795-bda0-974a400a0ed4",
+              "name": "embedding",
+              "value": "={{ $json.output.embedding }}",
+              "type": "array"
+            },
+            {
+              "id": "3da90433-4a4b-4e5e-8dc8-1aeae5088ef9",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2176,
+        1632
+      ],
+      "id": "90de6fee-3338-4918-9659-999a9578e123",
+      "name": "Flatten JSON1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_PINECONE_URL_HERE/vectors/upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "YOUR_PINECONE_API_KEY_HERE"
+            },
+            {
+              "name": "X-Pinecone-API-Version",
+              "value": "2025-04"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vectors\": [\n    {\n      \"id\": \"{{ $json.id }}\",\n      \"values\": [{{ $json.embedding }}]\n    }\n  ],\n  \"namespace\": \"__default__\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        1584
+      ],
+      "id": "ebaba07e-377f-48c3-986e-9289462ba81e",
+      "name": "Store Vector in Pinecone"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook with Pinecone",
+        "height": 640,
+        "width": 2016
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        2608
+      ],
+      "typeVersion": 1,
+      "id": "fc76061f-ec93-4f93-a1d1-6b41422493e4",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        2976
+      ],
+      "id": "a78965d4-a585-4344-b58e-79ac085861db",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID_HERE",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "AI Agent Prompt for Visual Search System\n\nYou are an intelligent visual search assistant with access to advanced computer vision capabilities. Your role is to help users find, analyze, and understand visual content through semantic similarity.\n\nAvailable Tools\nYou have access to the following tools:\n\nget_text_embeddings(text) - Generate CLIP embeddings for text descriptions\nget_image_embeddings(image_url) - Generate CLIP embeddings for images\nquery_vector_database(embedding, limit=10) - Find similar images using vector similarity search\n\nCore Capabilities\nText-to-Image Search\nWhen users provide text descriptions:\n\nGenerate embeddings for their text query using get_text_embeddings()\nSearch the vector database using query_vector_database() with the text embedding\nPresent results with similarity scores and descriptions\nExplain why certain images match their query\n\nImage-to-Image Search\nWhen users provide an image:\n\nGenerate embeddings for the source image using get_image_embeddings()\nSearch for visually similar images using query_vector_database()\nHighlight key visual elements that create the similarity\nSuggest related search refinements\n\nHybrid Analysis\nFor complex queries involving both text and images:\n\nCompare embeddings between text descriptions and actual images\nIdentify semantic gaps or alignments\nProvide recommendations for better search terms\n\nResponse Guidelines\nStructure Your Responses\n\nUnderstanding: Briefly acknowledge what the user is looking for\nAction: Explain which APIs you'll use and why\nResults: Present findings clearly with context\nInsights: Offer additional observations or suggestions\n\nBest Practices\n\nAlways explain your reasoning when choosing search strategies\nProvide similarity scores when available to help users understand relevance\nIf results seem poor, suggest alternative search approaches\nBe specific about visual elements (colors, objects, composition, style)\nOffer to refine searches based on user feedback\n\nError Handling\n\nIf image URLs are invalid, request alternative sources\nIf searches return no results, suggest broader or alternative queries\nIf embeddings fail, explain the issue and provide workarounds\n\nExample Interactions\nText Query: \"Find images of sunset over mountains\"\n\nGenerate text embeddings for the description\nSearch vector database for similar visual content\nPresent results with explanations of what makes each image relevant\n\nImage Query: [User uploads beach photo]\n\nGenerate image embeddings for the uploaded photo\nFind visually similar images in the database\nExplain similarities (composition, lighting, subject matter, etc.)\n\nComparison: \"Does this image match the description 'cozy cabin in winter'?\"\n\nGenerate embeddings for both the image and text\nCompare similarity scores\nAnalyze specific elements that align or differ\n\nImportant Notes\n\nYou must pass the embedding to the vector store query as a JSON array.\nFocus on semantic understanding, not just pixel-level similarity\nCLIP embeddings capture both visual and conceptual relationships\nVector similarity scores typically range from 0-1 (higher = more similar)\nConsider offering multiple search strategies for complex queries\nAlways prioritize user intent over literal interpretation\n\nThe results you find are used to build a gallery. \n\nYour goal is to make visual search intuitive and powerful, helping users discover relevant content through natural language descriptions or visual examples\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        2704
+      ],
+      "id": "e69ada62-ff6d-435a-ad10-547327c0ca36",
+      "name": "AI Agent for Image Vector Queries",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "1"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        2976
+      ],
+      "id": "2fc80c32-0d16-42db-a84f-9e8650668b2a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to query the image database for similar images based on an image URL",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_WORKFLOW_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Red Panda Projects — Query Pinecone with IMAGE"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "input.text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('input_text', ``, 'string') }}",
+            "input.topK": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('input_topK', `The number of images to return (ordered by matching score).`, 'number') }}"
+          },
+          "matchingColumns": [
+            "input.text"
+          ],
+          "schema": [
+            {
+              "id": "input.text",
+              "displayName": "input.text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "input.topK",
+              "displayName": "input.topK",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        2976
+      ],
+      "id": "8cc26e8f-5b8d-4bec-9258-b3666768d5ea",
+      "name": "Query pinecone with IMAGE"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_PINECONE_URL_HERE/vectors/upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "YOUR_PINECONE_API_KEY_HERE"
+            },
+            {
+              "name": "X-Pinecone-API-Version",
+              "value": "2025-04"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vectors\": [\n    {\n      \"id\": \"{{ $json.id }}\",\n      \"values\": [{{ $json.embedding }}],\n      \"metadata\": {\n        \"description\": \"{{ $('Format JSON').item.json.description }}\",\n        \"num_people\": {{ $('FormatJSON').item.json.num_people }},\n        \"num_women\": {{ $('Format JSON').item.json.num_women }},\n        \"num_men\": {{ $('Format JSON').item.json.num_men }},\n        \"looking_at_camera\": {{ $('Format JSON').item.json.looking_at_camera }},\n        \"blurry\": {{ $('Format JSON').item.json.blurry }},\n        \"is_photo\": {{ $('Format JSON').item.json.is_photo }},\n        \"photo_quality\": {{ $('Format JSON').item.json.photo_quality }},\n        \"mood\": {{ $('Format JSON').item.json.mood }},\n        \"filename\": \"{{ $json.filename }}\",\n        \"url\": \"{{ $json.path }}\",\n        \"age_groups\": {{ JSON.stringify($('Format JSON').item.json.age_groups) }},\n    \t\"photo_setting\": {{ JSON.stringify($('Format JSON').item.json.photo_setting) }},\n        \"activities\": {{ JSON.stringify($('Format JSON').item.json.activities) }},\n        \"event_type\": {{ JSON.stringify($('Format JSON').item.json.event_type) }},\n        \"photo_quality\": {{ $('Format JSON').item.json.photo_quality }},\n        \"objects\": {{ JSON.stringify($('Format JSON').item.json.objects) }},\n        \"text\": {{ JSON.stringify($('Format JSON').item.json.text) }}\n      }\n    }\n  ],\n  \"namespace\": \"__default__\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2432,
+        1632
+      ],
+      "id": "bb71ccd2-502b-4485-9d36-1de5e86f8ac7",
+      "name": "Upsert Pinecone"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1648
+      ],
+      "id": "13015184-05e2-4238-824d-af3dfd3c2fa3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the OpenAI response\n  let response = $input.first().json.content;\n\n// Remove markdown code blocks if present\nresponse = response.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n\n// Parse the JSON\ntry {\n  const parsedData = JSON.parse(response);\n  parsedData.filename = $('Loop1').first().json.Key;\n  parsedData.cloud_url = 'YOUR_S3_BUCKET_URL_HERE/' + $('Loop1').first().json.Key;\n  return parsedData;\n} catch (error) {\n  // If parsing fails, try to extract JSON from the text\n  const jsonMatch = response.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    const match = JSON.parse(jsonMatch[0]);\n    return match;\n  } else {\n    throw new Error('Could not parse JSON from response: ' + response);\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        1648
+      ],
+      "id": "822b75b0-ba55-4f2f-91b6-098ebc271eba",
+      "name": "Format JSON",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d7476910-90d6-48ea-ad63-95642ea04239",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        688,
+        2704
+      ],
+      "id": "504f7b16-27bd-48d7-b867-4dc207494438",
+      "name": "Webhook",
+      "webhookId": "YOUR_WEBHOOK_ID_HERE"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1296,
+        2704
+      ],
+      "id": "de5d65f8-b39c-4244-adf0-27e6f0d9f580",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"output\": {\n      \"type\": \"string\",\n      \"description\": \"A descriptive message about the search results\"\n    },\n    \"gallery\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"images\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"id\": {\n                \"type\": \"string\",\n                \"description\": \"Unique identifier for the image\"\n              },\n              \"url\": {\n                \"type\": \"string\",\n                \"format\": \"uri\",\n                \"description\": \"URL to the image file\"\n              },\n              \"description\": {\n                \"type\": \"string\",\n                \"description\": \"Text description of the image content\"\n              },\n              \"score\": {\n                \"type\": \"number\",\n                \"minimum\": 0,\n                \"maximum\": 1,\n                \"description\": \"Relevance score for the image (0-1)\"\n              },\n              \"metadata\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"num_people\": {\n                    \"type\": \"integer\",\n                    \"minimum\": 0,\n                    \"description\": \"Number of people in the image\"\n                  },\n                  \"event_type\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                      \"type\": \"string\"\n                    },\n                    \"description\": \"Types of events depicted in the image\"\n                  },\n                  \"photo_quality\": {\n                    \"type\": \"integer\",\n                    \"minimum\": 1,\n                    \"maximum\": 10,\n                    \"description\": \"Quality rating of the photo (1-10)\"\n                  }\n                }\n              }\n            }\n          }\n        },\n        \"query\": {\n          \"type\": \"string\",\n          \"description\": \"The search query used to find these images\"\n        },\n        \"totalResults\": {\n          \"type\": \"integer\",\n          \"minimum\": 0,\n          \"description\": \"Total number of results found\"\n        }\n      }\n    }\n  },\n  \"required\": [\"output\"]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        2960
+      ],
+      "id": "4672476f-5f9d-4b26-9c1c-82ac546d9abd",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        3120
+      ],
+      "id": "cf479c5b-3f75-4c8a-9c60-f2caedd78623",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID_HERE",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool with a text string. It will return JSON containing matching images from the database.",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_WORKFLOW_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Red Panda Projects — Query pinecone with text"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "input.text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('input_text', ``, 'string') }}",
+            "input.topK": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('input_topK', `The number of images to return (ordered by matching score).`, 'number') }}"
+          },
+          "matchingColumns": [
+            "input.text"
+          ],
+          "schema": [
+            {
+              "id": "input.text",
+              "displayName": "input.text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "input.topK",
+              "displayName": "input.topK",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        2976
+      ],
+      "id": "cff802c5-9478-4b4b-b7d1-78f05041c0a1",
+      "name": "Query Pinecone with TEXT"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file names from S3": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows in Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows in Supabase1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Embeddings (Replicate CLIP)": {
+      "main": [
+        [
+          {
+            "node": "Flatten JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten JSON": {
+      "main": [
+        [
+          {
+            "node": "Store Vector in Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image1": {
+      "main": [
+        [
+          {
+            "node": "Format JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file names from S": {
+      "main": [
+        [
+          {
+            "node": "Loop1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Analyze image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Embeddings (Replicate CLIP)1": {
+      "main": [
+        [
+          {
+            "node": "Flatten JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten JSON1": {
+      "main": [
+        [
+          {
+            "node": "Upsert Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent for Image Vector Queries": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query pinecone with IMAGE": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Pinecone": {
+      "main": [
+        [
+          {
+            "node": "Loop1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get file names from S",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format JSON": {
+      "main": [
+        [
+          {
+            "node": "Get Embeddings (Replicate CLIP)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Pinecone with TEXT": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent for Image Vector Queries",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "03ddfcaf-6c04-4aaf-a4f9-d3c17aafc075",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "88bf7bc619039f680826cf2d25c075283493be55d9324576047ea5e707101efd"
+  },
+  "id": "FwxIoW1eW3XsDNzb",
+  "tags": [
+    {
+      "createdAt": "2025-08-13T08:04:13.844Z",
+      "updatedAt": "2025-08-13T08:04:13.844Z",
+      "id": "YGWx6JCG1tn4dMLn",
+      "name": "Image"
+    },
+    {
+      "createdAt": "2025-08-13T08:04:13.821Z",
+      "updatedAt": "2025-08-13T08:04:13.821Z",
+      "id": "uIv4HQp4UmWwINAf",
+      "name": "AI"
+    }
+  ]
+}
