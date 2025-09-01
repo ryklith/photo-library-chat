@@ -1,4 +1,4 @@
-# Photo Library Chat
+# Photo Library Chat Playground (Prototype)
 
 The idea is that you can chat with your photo library. The app consists two parts:
 * a Next.js+TypeScript+Tailwind CSS app
@@ -8,9 +8,12 @@ On the UX you have a chat component and a display component. The chat will be re
 
 The idea was to have a touch and feel prototype to find out: what would it feel like if I could chat with my photo library?
 
+![Screenshot](images/photo-library-chat.png)
+
 # Setup n8n
 
 You can load the JSON file into n8n to build your workflow. You need to add your own authentications/accounts to be able to call the APIs.
+
 
 ## 🛠️ Boilerplate Getting Started
 
