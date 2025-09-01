@@ -1,29 +1,18 @@
 # Photo Library Chat
 
-A modern, fast, and scalable web application built with Next.js, TypeScript, and Tailwind CSS.
+The idea is that you can chat with your photo library. The app consists two parts:
+* a Next.js+TypeScript+Tailwind CSS app
+* several n8n workflows calling image analysis APIs
 
-## 🚀 Features
+On the UX you have a chat component and a display component. The chat will be responded to by an LLM. The LLM, in turn, has access to several image tools. It can return the URLs of photos that it judges to match the queries. 
 
-- **Next.js 15** - Latest version with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first CSS framework
-- **SCSS Support** - Advanced CSS preprocessing with variables, mixins, and nesting
-- **ESLint** - Code linting and formatting
-- **Lucide React** - Beautiful icons
-- **Modern UI Components** - Reusable Button and Card components
-- **Dark Mode Support** - Automatic dark/light theme switching
-- **Responsive Design** - Mobile-first approach
+The idea was to have a touch and feel prototype to find out: what would it feel like if I could chat with my photo library?
 
-## 📦 Tech Stack
+# Setup n8n
 
-- **Framework**: Next.js 15
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + SCSS
-- **Icons**: Lucide React
-- **Utilities**: clsx, tailwind-merge
-- **Linting**: ESLint
+You can load the JSON file into n8n to build your workflow. You need to add your own authentications/accounts to be able to call the APIs.
 
-## 🛠️ Getting Started
+## 🛠️ Boilerplate Getting Started
 
 ### Prerequisites
 
