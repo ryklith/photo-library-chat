@@ -1,6 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Github, Zap, ChevronUp, ChevronDown, Send, TestTube, Image, Users, Star } from "lucide-react"
+import { Github, Zap, ChevronUp, ChevronDown, Send, TestTube, Image, Users, Star, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import { GalleryImage, GalleryData } from "@/lib/gallery-service"
@@ -233,7 +233,16 @@ export default function Home() {
             <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1">
               {galleryImages.length > 0 ? (
                 galleryImages.map((image, index) => (
-                  <div key={image.id} className="group relative aspect-square bg-muted rounded-lg overflow-hidden border hover:border-primary transition-colors">
+                  <div 
+                    key={image.id} 
+                    className="group relative aspect-square bg-muted rounded-lg overflow-hidden border hover:border-primary transition-colors cursor-pointer"
+                    onClick={() => {
+                      if (image.originalUrl) {
+                        window.open(image.originalUrl, '_blank');
+                      }
+                    }}
+                    title="Click to view full size"
+                  >
                     <img 
                       src={image.url} 
                       alt={image.description}
@@ -267,6 +276,10 @@ export default function Home() {
                           )}
                         </div>
                         <p className="text-xs mt-1 line-clamp-2">{image.description}</p>
+                        <div className="flex items-center justify-center space-x-1 text-xs mt-1 opacity-75">
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Click to view full size</span>
+                        </div>
                       </div>
                     </div>
                   </div>

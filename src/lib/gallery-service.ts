@@ -7,6 +7,7 @@
 export interface GalleryImage {
   id: string;
   url: string;
+  originalUrl: string;
   description: string;
   score: number;
   filename: string;
@@ -105,12 +106,37 @@ export class GalleryService {
   }
 
   /**
+   * Generate thumbnail URL from original image URL
+   */
+  private generateThumbnailUrl(originalUrl: string): string {
+    if (!originalUrl) return '';
+    
+    try {
+      const url = new URL(originalUrl);
+      const pathParts = url.pathname.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      
+      // Insert 'thumbnails' before the filename
+      pathParts.splice(-1, 0, 'thumbnails');
+      
+      return `${url.protocol}//${url.host}${pathParts.join('/')}`;
+    } catch (error) {
+      console.warn('Failed to generate thumbnail URL:', error);
+      return originalUrl; // Fallback to original URL
+    }
+  }
+
+  /**
    * Normalize image data to consistent format
    */
   private normalizeImage(match: any): GalleryImage {
+    const originalUrl = match.metadata?.url || match.url || '';
+    const thumbnailUrl = this.generateThumbnailUrl(originalUrl);
+    
     return {
       id: match.id || `img-${Date.now()}-${Math.random()}`,
-      url: match.metadata?.url || match.url || '',
+      url: thumbnailUrl, // Use thumbnail URL for gallery display
+      originalUrl: originalUrl, // Keep original URL for full-size view
       description: match.metadata?.description || match.description || 'No description available',
       score: match.score || 0,
       filename: match.metadata?.filename || match.filename || 'unknown.jpg',
@@ -139,7 +165,7 @@ export class GalleryService {
   }): GalleryImage[] {
     return images.filter(image => {
       if (filters.minScore && image.score < filters.minScore) return false;
-      if (filters.maxPeople && image.metadata.num_people > filters.maxPeople) return false;
+      if (filters.maxPeople && (image.metadata.num_people ?? 0) > filters.maxPeople) return false;
       if (filters.activities && filters.activities.length > 0) {
         const hasActivity = filters.activities.some(activity => 
           image.metadata.activities?.includes(activity)
@@ -165,7 +191,7 @@ export class GalleryService {
         case 'score':
           return b.score - a.score;
         case 'people':
-          return (b.metadata.num_people || 0) - (a.metadata.num_people || 0);
+          return ((b.metadata.num_people ?? 0) - (a.metadata.num_people ?? 0));
         case 'quality':
           return (b.metadata.photo_quality || 0) - (a.metadata.photo_quality || 0);
         default:
