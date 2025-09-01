@@ -10,12 +10,14 @@ The idea was to have a touch and feel prototype to find out: what would it feel 
 
 ![Screenshot](images/photo-library-chat.png)
 
-# Setup n8n
+## Setup n8n
 
 You can load the JSON file into n8n to build your workflow. You need to add your own authentications/accounts to be able to call the APIs.
 
 
-## 🛠️ Boilerplate Getting Started
+
+
+# 🛠️ Boilerplate Getting Started
 
 ### Prerequisites
 
