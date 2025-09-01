@@ -177,7 +177,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Zap className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">Memojo Chat</h1>
+                                    <h1 className="text-xl font-bold">Photo Library Chat</h1>
             </div>
             
             {/* Desktop Navigation */}
@@ -424,9 +424,9 @@ export default function Home() {
       <footer className="border-t mt-16 hidden md:block">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              © 2024 Memojo Chat. Built with Next.js and Tailwind CSS.
-            </p>
+                                <p className="text-sm text-muted-foreground">
+                      © 2024 Photo Library Chat. Built with Next.js and Tailwind CSS.
+                    </p>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <Button variant="ghost" size="sm">
                 Privacy

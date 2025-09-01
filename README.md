@@ -1,4 +1,4 @@
-# Memojo Chat
+# Photo Library Chat
 
 A modern, fast, and scalable web application built with Next.js, TypeScript, and Tailwind CSS.
 
@@ -35,7 +35,7 @@ A modern, fast, and scalable web application built with Next.js, TypeScript, and
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd memojo-chat
+cd photo-library-chat
 ```
 
 2. Install dependencies:
@@ -87,7 +87,7 @@ These variables are required for the application to function:
 ```bash
 # Application Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=Memojo Chat
+NEXT_PUBLIC_APP_NAME=Photo Library Chat
 NEXT_PUBLIC_APP_VERSION=1.0.0
 ```
 
@@ -106,10 +106,10 @@ RATE_LIMIT_WINDOW_MS=900000
 
 #### Database Configuration
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/memojo_chat
+DATABASE_URL=postgresql://username:password@localhost:5432/photo_library_chat
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=memojo_chat
+DATABASE_NAME=photo_library_chat
 DATABASE_USER=username
 DATABASE_PASSWORD=password
 ```

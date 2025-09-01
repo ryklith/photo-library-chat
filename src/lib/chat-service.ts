@@ -54,7 +54,7 @@ export class ChatService {
         },
         body: JSON.stringify({
           type: 'test',
-          message: 'Hello from Memojo Chat!',
+          message: 'Hello from Photo Library Chat!',
           timestamp: new Date().toISOString(),
         }),
       });
